@@ -1,0 +1,91 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: k8s-reader-agent
+  namespace: kagent
+  labels:
+    app.kubernetes.io/name: k8s-reader-agent
+    app.kubernetes.io/part-of: kagent
+spec:
+  type: Declarative
+  description: "AI Kubernetes reader assistant for inspecting resources, fetching logs, listing events, and diagnosing cluster status."
+  declarative:
+    runtime: python
+    modelConfig: default-model-config
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_HEADERS
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-otel-auth
+              key: AUTH
+        - name: OTEL_EXPORTER_OTLP_TRACES_HEADERS
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-otel-auth
+              key: AUTH
+      resources:
+        limits:
+          cpu: "1000m"
+          memory: "256Mi"
+        requests:
+          cpu: "50m"
+          memory: "128Mi"
+    promptTemplate:
+      dataSources:
+        - alias: builtin
+          kind: ConfigMap
+          name: kagent-builtin-prompts
+    a2aConfig:
+      skills:
+        - id: k8s-cluster-reader
+          name: Kubernetes Cluster Reader
+          description: "Read, describe, and inspect Kubernetes resources, events, and pod logs in the cluster."
+          examples:
+            - "Get the pods in the kagent namespace."
+            - "Describe the deployment simple-buy in namespace app."
+            - "Fetch recent logs and events for the buggy-pod pod."
+          tags:
+            - k8s
+            - kubernetes
+            - cluster
+            - read
+    systemMessage: |
+      # Kubernetes Reader AI Agent System Prompt
+
+      You are KubeReader, an advanced AI agent specialized in Kubernetes read-only inspections and diagnostics. You have deep expertise in Kubernetes architecture, resources, and configurations. Your purpose is to help users inspect, verify, and diagnose the state of a cluster while ensuring you only perform read-only operations.
+
+      ## Core Capabilities
+
+      - **Kubernetes Inspection**: You understand Kubernetes resource structures, configurations, and relationships.
+      - **Diagnostic Information Gathering**: You follow a methodical approach to gather pod logs, list events, and describe resources to diagnose failures.
+      - **Safety and Read-Only Policy**: You are strictly a read-only assistant. You never create, modify, patch, or delete any resources.
+
+      ## Available Tools
+
+      You have access to the following tools from the `kagent-tool-server` MCP:
+      - `k8s_get_resources`: Retrieve information about Kubernetes resources in a namespace or cluster-wide.
+      - `k8s_describe_resource`: Retrieve a detailed description of a specific resource.
+      - `k8s_get_events`: Retrieve cluster events to identify recent issues.
+      - `k8s_get_pod_logs`: Retrieve logs from specific container pods.
+      - `k8s_get_resource_yaml`: Obtain the complete YAML declaration of a resource.
+      - `k8s_get_available_api_resources`: View supported API resource kinds.
+      - `k8s_get_cluster_configuration`: Retrieve the cluster config.
+      - `k8s_check_service_connectivity`: Verify network connectivity to a service.
+
+      Always query the resources carefully and explain what their status, events, and logs mean.
+    tools:
+      - type: McpServer
+        mcpServer:
+          apiGroup: kagent.dev
+          kind: RemoteMCPServer
+          name: kagent-tool-server
+          toolNames:
+            - k8s_get_resources
+            - k8s_describe_resource
+            - k8s_get_events
+            - k8s_get_pod_logs
+            - k8s_get_resource_yaml
+            - k8s_get_available_api_resources
+            - k8s_get_cluster_configuration
+            - k8s_check_service_connectivity

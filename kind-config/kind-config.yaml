@@ -1,0 +1,25 @@
+# kind-config.yaml
+# Kind (Kubernetes in Docker) configuration for a two-node cluster.
+# This configuration spins up one control-plane node and one worker node.
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: kind-cluster
+
+nodes:
+- role: control-plane
+  image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+  extraPortMappings:
+  - containerPort: 30000
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 31000
+    hostPort: 3000
+    protocol: TCP
+  - containerPort: 32000
+    hostPort: 8000
+    protocol: TCP
+  - containerPort: 30900
+    hostPort: 9000
+    protocol: TCP
+

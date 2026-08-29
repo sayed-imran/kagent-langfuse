@@ -1,0 +1,72 @@
+# Minimal configuration for kagent: controller and UI only
+providers:
+  default: gemini
+  gemini:
+    model: gemini-3.7-flash
+    apiKey: AIzaSyC6vNKhPprDkUIcBO2H1US5vHbvof_AIuU
+  ollama:
+    provider: Ollama
+    model: "gemma3:4b"
+    config:
+      host: "http://spark-065b:11434"
+
+
+# Enable bundled postgres database for the controller
+database:
+  postgres:
+    bundled:
+      enabled: true
+
+# Observability / Langfuse OTel Tracing
+otel:
+  tracing:
+    enabled: true
+    exporter:
+      otlp:
+        endpoint: "http://langfuse-web.langfuse.svc.cluster.local:3000/api/public/otel/v1/traces"
+        protocol: "http/protobuf"
+        timeout: 15000
+        insecure: true
+
+# Disable all optional components, agents, and tools
+kmcp:
+  enabled: false
+
+kagent-tools:
+  enabled: true
+
+k8s-agent:
+  enabled: true
+
+kgateway-agent:
+  enabled: false
+
+istio-agent:
+  enabled: false
+
+promql-agent:
+  enabled: false
+
+observability-agent:
+  enabled: false
+
+argo-rollouts-agent:
+  enabled: false
+
+helm-agent:
+  enabled: false
+
+cilium-policy-agent:
+  enabled: false
+
+cilium-manager-agent:
+  enabled: false
+
+cilium-debug-agent:
+  enabled: false
+
+grafana-mcp:
+  enabled: false
+
+querydoc:
+  enabled: false
